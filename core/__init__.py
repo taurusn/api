@@ -1,0 +1,1 @@
+# Core package - Database connection, config, dependencies
