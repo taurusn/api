@@ -1,19 +1,39 @@
 # Schemas package - Pydantic request/response models
 
-from .user import (
-    UserRole, InternshipType, ApplicationStatus,
-    UserLogin, UserRegister, Token, TokenData,
-    UserCreate, UserUpdate, UserResponse, UserProfile,
-    StudentProfileCreate, StudentProfileUpdate, StudentProfileResponse,
-    CompanyProfileCreate, CompanyProfileUpdate, CompanyProfileResponse,
-    InternshipCreate, InternshipUpdate, InternshipResponse, InternshipList,
-    ApplicationCreate, ApplicationUpdate, ApplicationResponse, ApplicationList,
-    APIResponse, ErrorResponse
+# Authentication schemas
+from .auth import (
+    UserRole, UserLogin, UserRegister, Token, TokenData,
+    TokenRefresh, PasswordReset, PasswordResetConfirm, ChangePassword
 )
 
+# User and profile schemas
+from .user import (
+    UserBase, UserCreate, UserUpdate, UserResponse, UserProfile,
+    StudentProfileBase, StudentProfileCreate, StudentProfileUpdate, StudentProfileResponse,
+    CompanyProfileBase, CompanyProfileCreate, CompanyProfileUpdate, CompanyProfileResponse,
+    BaseResponse
+)
+
+# Internship schemas
+from .internship import (
+    InternshipType, InternshipBase, InternshipCreate, InternshipUpdate,
+    InternshipResponse, InternshipList, InternshipSearch
+)
+
+# Application schemas
+from .application import (
+    ApplicationStatus, ApplicationBase, ApplicationCreate, ApplicationUpdate,
+    ApplicationResponse, ApplicationList, ApplicationStatusUpdate, ApplicationStats
+)
+
+# Response schemas
+from .responses import (
+    APIResponse, ErrorResponse, ValidationError, ValidationErrorResponse
+)
+
+# Common schemas
 from .common import (
-    PaginationParams, PaginatedResponse,
-    HealthCheck, MessageResponse
+    PaginationParams, PaginatedResponse, HealthCheck, MessageResponse
 )
 
 __all__ = [
@@ -22,25 +42,29 @@ __all__ = [
     
     # Auth schemas
     "UserLogin", "UserRegister", "Token", "TokenData",
+    "TokenRefresh", "PasswordReset", "PasswordResetConfirm", "ChangePassword",
     
     # User schemas
-    "UserCreate", "UserUpdate", "UserResponse", "UserProfile",
+    "UserBase", "UserCreate", "UserUpdate", "UserResponse", "UserProfile",
     
     # Student schemas
-    "StudentProfileCreate", "StudentProfileUpdate", "StudentProfileResponse",
+    "StudentProfileBase", "StudentProfileCreate", "StudentProfileUpdate", "StudentProfileResponse",
     
     # Company schemas
-    "CompanyProfileCreate", "CompanyProfileUpdate", "CompanyProfileResponse",
+    "CompanyProfileBase", "CompanyProfileCreate", "CompanyProfileUpdate", "CompanyProfileResponse",
     
     # Internship schemas
-    "InternshipCreate", "InternshipUpdate", "InternshipResponse", "InternshipList",
+    "InternshipBase", "InternshipCreate", "InternshipUpdate", "InternshipResponse", 
+    "InternshipList", "InternshipSearch",
     
     # Application schemas
-    "ApplicationCreate", "ApplicationUpdate", "ApplicationResponse", "ApplicationList",
+    "ApplicationBase", "ApplicationCreate", "ApplicationUpdate", "ApplicationResponse", 
+    "ApplicationList", "ApplicationStatusUpdate", "ApplicationStats",
     
     # Response schemas
-    "APIResponse", "ErrorResponse",
+    "APIResponse", "ErrorResponse", "ValidationError", "ValidationErrorResponse",
     
     # Common schemas
-    "PaginationParams", "PaginatedResponse", "HealthCheck", "MessageResponse"
+    "PaginationParams", "PaginatedResponse", "HealthCheck", "MessageResponse",
+    "BaseResponse"
 ]
