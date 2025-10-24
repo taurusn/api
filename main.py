@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from core.config import settings
 from core.bootstrap import async_bootstrap
+from routes import auth_router, middleware_demo_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -22,6 +23,10 @@ app = FastAPI(
     redoc_url="/redoc",
     lifespan=lifespan
 )
+
+# Include routers
+app.include_router(auth_router)
+app.include_router(middleware_demo_router)
 
 @app.get("/")
 async def root():

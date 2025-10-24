@@ -13,7 +13,7 @@ class PaginationParams(BaseModel):
     page: int = Field(default=1, ge=1, description="Page number")
     size: int = Field(default=20, ge=1, le=100, description="Items per page")
     sort_by: Optional[str] = Field(default=None, description="Sort field")
-    sort_order: Optional[str] = Field(default="desc", regex="^(asc|desc)$", description="Sort order")
+    sort_order: Optional[str] = Field(default="desc", pattern="^(asc|desc)$", description="Sort order")
 
 class PaginatedResponse(BaseModel, Generic[T]):
     """Generic paginated response"""
@@ -47,3 +47,20 @@ class MessageResponse(BaseModel):
     """Simple message response"""
     message: str
     success: bool = True
+
+class APIResponse(BaseModel):
+    """Standard API response format"""
+    success: bool
+    message: str
+    data: Optional[dict] = None
+    errors: Optional[list[str]] = None
+    
+    @classmethod
+    def success_response(cls, message: str, data: Optional[dict] = None):
+        """Create success response"""
+        return cls(success=True, message=message, data=data)
+    
+    @classmethod
+    def error_response(cls, message: str, errors: Optional[list[str]] = None):
+        """Create error response"""
+        return cls(success=False, message=message, errors=errors)
