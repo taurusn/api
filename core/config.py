@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     algorithm: str
     access_token_expire_minutes: int
     refresh_token_expire_days: int
+    verify_user_exists_on_auth: bool = True  # Always verify user exists for now
     
     # Environment
     environment: str

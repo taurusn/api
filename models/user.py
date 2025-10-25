@@ -23,6 +23,10 @@ class User(BaseModel):
     company_profile = relationship("CompanyProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
     activity_logs = relationship("ActivityLog", back_populates="user")
     
+    # Direct internship and application relationships
+    internships = relationship("Internship", foreign_keys="Internship.company_id", cascade="all, delete-orphan", overlaps="company")
+    applications = relationship("Application", foreign_keys="Application.student_id", cascade="all, delete-orphan", overlaps="student")
+    
     def __repr__(self):
         return f"<User(id={self.id}, email='{self.email}', role='{self.role}')>"
 
@@ -66,7 +70,6 @@ class StudentProfile(BaseModel):
     
     # Relationships
     user = relationship("User", back_populates="student_profile")
-    applications = relationship("Application", back_populates="student", cascade="all, delete-orphan")
 
 
 class CompanyProfile(BaseModel):
@@ -82,7 +85,6 @@ class CompanyProfile(BaseModel):
     
     # Relationships
     user = relationship("User", back_populates="company_profile")
-    internships = relationship("Internship", back_populates="company", cascade="all, delete-orphan")
 
 
 class Internship(BaseModel):
@@ -91,22 +93,36 @@ class Internship(BaseModel):
     """
     __tablename__ = "internships"
     
-    company_id = Column(Integer, ForeignKey("company_profiles.id", ondelete="CASCADE"), nullable=False)
+    company_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)  # Link directly to user
     title = Column(String(150), nullable=False)
-    description = Column(Text)
+    description = Column(Text, nullable=False)
     location = Column(String(120))
-    category = Column(String(80))
+    category = Column(String(80), nullable=False)
     type = Column(String(40), default='onsite', nullable=False)  # remote, onsite, hybrid
-    duration_weeks = Column(Integer)
+    duration_weeks = Column(Integer, nullable=False)
+    
+    # Enhanced company fields
+    requirements = Column(Text)  # Required skills and qualifications
+    benefits = Column(Text)  # Internship benefits
+    salary_min = Column(Integer)  # Minimum salary (optional)
+    salary_max = Column(Integer)  # Maximum salary (optional)
+    application_deadline = Column(DateTime(timezone=True))  # Application deadline
+    status = Column(String(20), default='draft', nullable=False)  # draft, active, paused, closed, expired
+    
+    # Tracking fields
     posted_at = Column(DateTime(timezone=True), server_default=BaseModel.created_at.default)
+    updated_at = Column(DateTime(timezone=True), server_default=BaseModel.created_at.default, onupdate=BaseModel.created_at.default)
     
     # Relationships
-    company = relationship("CompanyProfile", back_populates="internships")
+    company = relationship("User", foreign_keys=[company_id], overlaps="internships")  # Link to company user
     applications = relationship("Application", back_populates="internship", cascade="all, delete-orphan")
     
     # Indexes
     __table_args__ = (
         Index('idx_internships_company_id', 'company_id'),
+        Index('idx_internships_status', 'status'),
+        Index('idx_internships_category', 'category'),
+        Index('idx_internships_posted_at', 'posted_at'),
     )
 
 
@@ -117,20 +133,29 @@ class Application(BaseModel):
     __tablename__ = "applications"
     
     internship_id = Column(Integer, ForeignKey("internships.id", ondelete="CASCADE"), nullable=False)
-    student_id = Column(Integer, ForeignKey("student_profiles.id", ondelete="CASCADE"), nullable=False)
+    student_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)  # Link directly to user
     cover_letter = Column(Text)
-    status = Column(String(30), default='pending', nullable=False)  # pending, reviewed, accepted, rejected
+    status = Column(String(30), default='pending', nullable=False)  # pending, under_review, accepted, rejected
+    
+    # Company management fields
+    company_notes = Column(Text)  # Internal company notes
+    rejection_reason = Column(Text)  # Reason for rejection (if applicable)
+    
+    # Tracking fields
     applied_at = Column(DateTime(timezone=True), server_default=BaseModel.created_at.default)
+    updated_at = Column(DateTime(timezone=True), server_default=BaseModel.created_at.default, onupdate=BaseModel.created_at.default)
     
     # Relationships
     internship = relationship("Internship", back_populates="applications")
-    student = relationship("StudentProfile", back_populates="applications")
+    student = relationship("User", foreign_keys=[student_id], overlaps="applications")  # Link to student user
     
     # Constraints and Indexes
     __table_args__ = (
         Index('idx_applications_student_id', 'student_id'),
+        Index('idx_applications_internship_id', 'internship_id'),
         Index('idx_applications_status', 'status'),
-        # Unique constraint handled at database level
+        Index('idx_applications_applied_at', 'applied_at'),
+        # Unique constraint: one application per student per internship
     )
 
 
