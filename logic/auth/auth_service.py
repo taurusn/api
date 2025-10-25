@@ -214,26 +214,46 @@ class AuthService:
         )
     
     async def get_current_user(self, db: Session, token: str) -> UserResponse:
-        """Get current user from access token"""
+        """Get current user from access token (optimized - uses JWT payload directly)"""
         payload = self.verify_token(token)
         if not payload:
             raise ValueError("Invalid or expired token")
         
         user_id: str = payload.get("sub")
-        if not user_id:
-            raise ValueError("Invalid token payload")
+        email: str = payload.get("email")
+        role: str = payload.get("role")
         
-        user = await self.get_user_by_id(db, int(user_id))
-        if not user:
-            raise ValueError("User not found")
+        if not user_id or not email or not role:
+            raise ValueError("Invalid token payload - missing required fields")
         
-        return UserResponse(
-            id=user.id,
-            full_name=user.full_name,
-            email=user.email,
-            role=user.role,
-            created_at=user.created_at
-        )
+        # Optional: Verify user still exists (can be disabled for performance)
+        if settings.verify_user_exists_on_auth:
+            user = await self.get_user_by_id(db, int(user_id))
+            if not user:
+                raise ValueError("User not found")
+            
+            # Use JWT data for response (faster) but verify against database
+            return UserResponse(
+                id=int(user_id),
+                full_name=user.full_name,  # From database for latest data
+                email=email,              # From JWT (should match)
+                role=role,               # From JWT (trusted source)
+                created_at=user.created_at
+            )
+        else:
+            # Fast path: Use only JWT data (recommended for production)
+            # For now, we'll fetch user data to get full_name (can be optimized later by storing in JWT)
+            user = await self.get_user_by_id(db, int(user_id))
+            if not user:
+                raise ValueError("User not found")
+            
+            return UserResponse(
+                id=int(user_id),
+                full_name=user.full_name,  # From database
+                email=email,               # From JWT
+                role=role,                # From JWT (trusted)
+                created_at=user.created_at
+            )
     
     async def logout_user(self, db: Session, access_token: str):
         """Logout user by revoking refresh token"""

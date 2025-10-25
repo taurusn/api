@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from core.config import settings
 from core.bootstrap import async_bootstrap
-from routes import auth_router, middleware_demo_router
+from routes import auth_router, middleware_demo_router, internships_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -27,6 +27,7 @@ app = FastAPI(
 # Include routers
 app.include_router(auth_router)
 app.include_router(middleware_demo_router)
+app.include_router(internships_router)
 
 @app.get("/")
 async def root():
